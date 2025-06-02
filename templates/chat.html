@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    }
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chat — Chatbook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="static/styles/chat.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link" href="#">Chat</a>
+  </nav>
+
+  <div class="split-container">
+    <div class="left-section">
+      <iframe src="/uploaded/{{filename}}"></iframe>
+    </div>
+
+    <div class="right-section">
+      <div class="flashcard-gen">
+        <button id="flashcard_toggle" class="btn btn-secondary" onclick="card_toggle()">Generate Flashcards</button>
+        <div id="fcForm" style="display:none; margin-top:10px;">
+          <input type="number" id="fcCount" class="form-control d-inline-block w-auto"
+                 min="1" value="10" />
+          <input type="text" id="fcTopic" class="form-control d-inline-block w-50"
+                 placeholder="e.g. key definitions" />
+          <button id="generateFC" class="btn btn-primary" onclick="gen_flashcards()">Create</button>
+          <p class="loading" id="fcloading"></p>
+        </div>
+      </div>
+
+      <div id="flashcardsContainer"></div>
+
+      <div class="ask-chatbook">
+        <h1 class="display-5">Chat</h1>
+        <div id="chatContainer"></div>
+        <form id="askForm">
+          <input type="text" id="question" placeholder="Type your question…" required />
+          <input type="submit" value="Send" />
+        </form>
+        <p class="loading" id="loadingspan"></p>
+        <p id="note">Note: If using a .pdf file, the page number refers to the page on the .pdf file itself.</p>
+        <button id="clearChat" onclick="clear_chat()">Clear Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let chatContainer = document.querySelector("#chatContainer")
+    let askForm = document.querySelector("#askForm")
+    let clearChat = document.querySelector("#clearChat")
+    let questionInput = document.querySelector("#question")
+
+    function renderChat(history) {
+      chatContainer.innerHTML = ""
+      history.forEach(msg => {
+        let p = document.createElement("p")
+        if (msg.role === "user") {
+          p.textContent = "You: "+msg.content
+          p.style.textAlign = "right"
+          p.style.background = "#e9f5ff"
+        } else {
+          p.textContent = "Chatbook: "+msg.content
+          p.style.textAlign = "left"
+          p.style.background = "#f1f1f1"
+        }
+        p.style.padding = "6px 10px"
+        p.style.margin = "6px 0"
+        p.style.borderRadius = "4px"
+        chatContainer.appendChild(p)
+      })
+      document.querySelector("#loadingspan").innerHTML = ""
+      chatContainer.scrollTop = chatContainer.scrollHeight
+      MathJax.typesetPromise()
+    }
+
+    window.addEventListener("DOMContentLoaded", ()=> {
+      fetch("/get_history")
+        .then(response=>response.json())
+        .then(data => {
+          if (data.history) {
+            renderChat(data.history)
+          }
+        })
+    })
+
+    askForm.addEventListener("submit", async function(e) {
+      e.preventDefault()
+      document.querySelector("#loadingspan").innerHTML = "Loading..."
+      let q = questionInput.value.trim()
+      if (!q) return
+      response = await fetch("/ask_chatbook", {
+        method:"POST",
+        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body:new URLSearchParams({question:q})
+      })
+      data = await response.json()
+      if (data.history) {
+          renderChat(data.history)
+          questionInput.value=""
+      }
+    })
+
+    async function clear_chat() {
+      response = await fetch("/clear_history", {method:"POST"})
+      chatContainer.innerHTML = ""
+    }
+
+    function card_toggle() {
+      let f = document.querySelector("#fcForm")
+      if (f.style.display == "none") {
+        f.style.display = "block"
+      } else {
+        f.style.display = "none"
+      }
+    }
+
+    async function gen_flashcards() {
+      let count   = parseInt(document.querySelector("#fcCount").value)
+      let topic = document.querySelector("#fcTopic").value.trim()
+      if (!topic) return alert("Enter a topic or custom prompt.")
+      document.querySelector("#fcloading").innerHTML = "Loading..."
+      let response = await fetch(`/generate_flashcards/${count}/${topic}`)
+      let flashcards = await response.json()
+      renderFlashcards(flashcards.flashcards)
+    }
+
+    function renderFlashcards(cards){
+      let ctn = document.querySelector("#flashcardsContainer")
+      ctn.innerHTML = ""
+      cards.forEach(c=>{
+        let card = document.createElement("div")
+        card.className="flashcard"
+        card.style.fontSize = "10px"
+        card.innerHTML = `
+          <div class="front">Q:<br/>${c.question}</div>
+          <div class="back">A:<br/>${c.answer}</div>
+        `
+        card.querySelector(".front").style.display = "flex"
+        card.querySelector(".back").style.display = "none"
+        card.onclick = () => {
+          front = card.querySelector(".front")
+          back = card.querySelector(".back")
+          if (front.style.display=="flex") {
+            front.style.display = "none"
+            back.style.display  = "flex"
+          }
+          else {
+            front.style.display = "flex"
+            back.style.display  = "none"
+          }
+        }
+        ctn.appendChild(card)
+      })
+      document.querySelector("#fcloading").innerHTML = ""
+      MathJax.typesetPromise()
+    }
+  </script>
+</body>
+</html>
