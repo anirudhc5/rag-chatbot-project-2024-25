@@ -1,0 +1,152 @@
+* {
+    font-family: "Inter", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+.navbar {
+    margin: 20px auto;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 40px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+    display: flex;
+    gap: 1rem;
+}
+.nav-link {
+    padding: 10px 20px;
+    font-weight: bold;
+    color: #555;
+    text-decoration: none;
+    border-radius: 30px;
+}
+.nav-link.active {
+    color: black;
+}
+.navbar-nav, .nav-link:hover {
+    background-color: #e2e6ea;
+    color: #000;
+}
+.split-container {
+    display: flex;
+    flex: 1;
+}
+.left-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fdfdfd;
+    padding: 10px;
+}
+iframe {
+    width: 90%;
+    height: 90%;
+    border: none;
+}
+.right-section {
+    flex: 1;
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+.ask-chatbook {
+    flex: 1;
+}
+#chatContainer {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    overflow-y: auto;
+}
+#askForm {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+#question {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#askForm input[type="submit"] {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
+#clearChat {
+    margin-top: 10px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background: #dc3545;
+    color: #fff;
+    cursor: pointer;
+}
+.flashcard-gen {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+.flashcard-gen input {
+    margin: 0 .5rem;
+    width: auto;
+    display: inline-block;
+}
+#flashcardsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+#generateFC {
+    margin-top: 10px;
+}
+.flashcard {
+    width: 200px;
+    height: 140px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+}
+.flashcard .front,
+.flashcard .back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+}
+.flashcard .back {
+    display: none;
+    background: #f7f7f7;
+}
+#note {
+    color: #555;
+}
+.loading {
+    color: #555;
+    margin-top: 10px;
+}
